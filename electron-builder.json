@@ -1,0 +1,35 @@
+{
+  "appId": "com.overthemountains.photoviewer",
+  "productName": "Trail Cam Photo Viewer",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "src/main/**/*",
+    "src/renderer/**/*",
+    "assets/**/*",
+    "package.json"
+  ],
+  "mac": {
+    "target": ["dmg", "zip"],
+    "category": "public.app-category.photography",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist"
+  },
+  "win": {
+    "target": "nsis",
+    "icon": "assets/icon.ico"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "category": "Graphics",
+    "icon": "assets/icon.png"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "your-github-username",
+    "repo": "photo-viewer"
+  }
+}

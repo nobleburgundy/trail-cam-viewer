@@ -1,0 +1,18 @@
+{
+  "name": "trail-cam-viewer",
+  "version": "1.0.0",
+  "description": "An Electron based node app for viewing and categorizing photos.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow-models/mobilenet": "^2.1.1",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "electron": "^34.2.0"
+  }
+}
