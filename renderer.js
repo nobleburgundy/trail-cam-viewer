@@ -42,13 +42,20 @@ async function loadImages(folderPath) {
   try {
     // Fetch image list from the main process
     const imageFiles = await window.electronAPI.getImages(folderPath);
+    console.log("imageFiles: ", imageFiles);
 
-    imageFiles.forEach((imageName) => {
+    imageFiles.forEach((file) => {
       const img = document.createElement("img");
-      img.src = `${folderPath}/${imageName}`;
+      img.src = `${folderPath}/${file.imageName}`;
       img.className = "photo";
       img.onclick = () => classifyAndDisplay(img.src);
       imageContainer.appendChild(img);
+
+      const label = document.createElement("div");
+      label.className = "image-label";
+      const fileDate = new Date(file.dateCreated); // Use the dateCreated from the file object
+      label.textContent = fileDate.toLocaleDateString("en-US");
+      imageContainer.appendChild(label);
     });
   } catch (error) {
     console.error("Error loading images:", error);

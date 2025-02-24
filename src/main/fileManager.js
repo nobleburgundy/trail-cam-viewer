@@ -19,10 +19,22 @@ function getImagesFromSDCard(folderPath) {
         return reject(err);
       }
 
-      // Filter only image files
-      const imageFiles = files.filter((file) => {
-        return IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase());
-      });
+      // Filter only image files and get their stats
+      const imageFiles = files
+        .filter((file) => {
+          return IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase());
+        })
+        .map((file) => {
+          const filePath = path.join(folderPath, file);
+          const stats = fs.statSync(filePath);
+          console.log("stats: ", stats);
+          // Check if the file is a file (not a directory)
+
+          return {
+            imageName: file,
+            dateCreated: stats.mtime, // Use modified time as date created
+          };
+        });
 
       resolve(imageFiles);
     });

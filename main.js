@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const { classifyImage } = require("./src/main/ml/imageClassifier");
+const { getImagesFromSDCard } = require("./src/main/fileManager");
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -32,11 +33,8 @@ app.on("activate", () => {
 // IPC handler to get images from a folder
 ipcMain.handle("get-images", async (event, folderPath) => {
   try {
-    const files = fs.readdirSync(folderPath);
-    const imageFiles = files.filter((file) =>
-      /\.(jpg|jpeg|png|gif)$/i.test(file)
-    );
-    return imageFiles;
+    const imageFiles = await getImagesFromSDCard(folderPath);
+    return imageFiles; // Return the full image file objects
   } catch (error) {
     console.error("Error reading images:", error);
     throw error;
