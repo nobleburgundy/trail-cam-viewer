@@ -1,41 +1,55 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
-const sdCardWatcher = require("./src/main/sdCardWatcher");
-const imageClassifier = require("./src/main/ml/imageClassifier");
+const fs = require("fs");
+const { classifyImage } = require("./src/main/ml/imageClassifier");
 
-let mainWindow;
-
-app
-  .whenReady()
-  .then(() => {
-    console.log("App is ready");
-
-    mainWindow = new BrowserWindow({
-      width: 1000,
-      height: 700,
-      webPreferences: {
-        nodeIntegration: false, // Security best practice
-        contextIsolation: true,
-        preload: path.join(__dirname, "preload.js"), // Loads a secure script
-      },
-    });
-
-    mainWindow
-      .loadFile(path.join(__dirname, "index.html"))
-      .then(() => {
-        console.log("Main window loaded successfully");
-      })
-      .catch((err) => {
-        console.error("Failed to load main window:", err);
-      });
-
-    sdCardWatcher.watchSDCard(mainWindow);
-  })
-  .catch((err) => {
-    console.error("App failed to start:", err);
+function createWindow() {
+  const mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
 
+  mainWindow.loadFile("index.html");
+}
+
+app.whenReady().then(createWindow);
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+app.on("activate", () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+
+// IPC handler to get images from a folder
+ipcMain.handle("get-images", async (event, folderPath) => {
+  try {
+    const files = fs.readdirSync(folderPath);
+    const imageFiles = files.filter((file) =>
+      /\.(jpg|jpeg|png|gif)$/i.test(file)
+    );
+    return imageFiles;
+  } catch (error) {
+    console.error("Error reading images:", error);
+    throw error;
+  }
+});
+
+// IPC handler to classify an image
 ipcMain.handle("classify-image", async (event, imagePath) => {
-  const result = await imageClassifier.classifyImage(imagePath);
-  return result;
+  try {
+    const predictions = await classifyImage(imagePath);
+    return predictions;
+  } catch (error) {
+    console.error("Error classifying image:", error);
+    throw error;
+  }
 });

@@ -10,6 +10,8 @@ const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
  * @returns {Promise<string[]>} - A list of image file names.
  */
 function getImagesFromSDCard(folderPath) {
+  console.log("getImagesFromSDCard called with path:", folderPath);
+
   return new Promise((resolve, reject) => {
     fs.readdir(folderPath, (err, files) => {
       if (err) {

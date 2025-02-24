@@ -4,7 +4,8 @@
   "description": "An Electron based node app for viewing and categorizing photos.",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "NODE_ENV=development electron .",
+    "build": "NODE_ENV=production electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

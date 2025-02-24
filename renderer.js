@@ -1,6 +1,25 @@
 document.addEventListener("DOMContentLoaded", async () => {
+  console.log("DOM fully loaded and parsed");
+
   const statusDiv = document.getElementById("status");
   const imageContainer = document.getElementById("image-container");
+
+  // Check if running in development mode
+  const isDevelopment = window.env.NODE_ENV === "development";
+
+  console.log(
+    "Running in development mode:",
+    isDevelopment,
+    "NODE_ENV:",
+    window.env.NODE_ENV
+  );
+
+  if (isDevelopment) {
+    const testPath = "src/test/SD"; // Replace with your test path
+    statusDiv.textContent =
+      "Running in development mode. Loading test images...";
+    loadImages(testPath);
+  }
 
   // Listen for SD card status updates from `sdCardWatcher.js`
   window.electronAPI.onSDCardMounted((sdCardPath) => {
@@ -26,7 +45,7 @@ async function loadImages(folderPath) {
 
     imageFiles.forEach((imageName) => {
       const img = document.createElement("img");
-      img.src = `file://${folderPath}/${imageName}`;
+      img.src = `${folderPath}/${imageName}`;
       img.className = "photo";
       img.onclick = () => classifyAndDisplay(img.src);
       imageContainer.appendChild(img);
