@@ -33,6 +33,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
+async function populateSidebar(imageFiles) {
+  const sidebarContainer = document.getElementById("sidebar-ul");
+  const groupedImages = await groupImagesByDate(imageFiles);
+  console.log("groupedImages", groupedImages);
+
+  Object.keys(groupedImages).forEach((date) => {
+    const li = document.createElement("li");
+    li.className = "nav-item";
+    const button = document.createElement("button");
+    button.className = "btn btn-link";
+    button.textContent = date; // Use the date as the button text
+    li.appendChild(button);
+    sidebarContainer.appendChild(li);
+  });
+}
+
 // Function to load images from the SD card
 async function loadImages(folderPath) {
   console.log("loadImages called with path:", folderPath);
@@ -43,6 +59,7 @@ async function loadImages(folderPath) {
     // Fetch image list from the main process
     const imageFiles = await window.electronAPI.getImages(folderPath);
     console.log("imageFiles: ", imageFiles);
+    populateSidebar(imageFiles);
 
     imageFiles.forEach((file) => {
       const img = document.createElement("img");
@@ -52,7 +69,7 @@ async function loadImages(folderPath) {
       imageContainer.appendChild(img);
 
       const label = document.createElement("div");
-      label.className = "image-label";
+      label.className = "figure-caption";
       const fileDate = new Date(file.dateCreated); // Use the dateCreated from the file object
       label.textContent = fileDate.toLocaleDateString("en-US");
       imageContainer.appendChild(label);
@@ -71,4 +88,19 @@ async function classifyAndDisplay(imagePath) {
     console.error("Classification error:", error);
     alert("Error classifying image.");
   }
+}
+
+// Interface for an array of images grouped by date
+async function groupImagesByDate(imageFiles) {
+  const groupedImages = {};
+
+  imageFiles.forEach((file) => {
+    const date = new Date(file.dateCreated).toLocaleDateString("en-US");
+    if (!groupedImages[date]) {
+      groupedImages[date] = [];
+    }
+    groupedImages[date].push(file);
+  });
+
+  return groupedImages;
 }

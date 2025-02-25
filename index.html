@@ -4,17 +4,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Viewer</title>
+    <title>Trail Cam Viewer</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="src/ui/styles.css">
 </head>
 
 <body>
-    <h1>Trail Cam Photo Viewer</h1>
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+        <!-- <div id="status" class="alert alert-info text-center">Waiting for SD card...</div> -->
+        <h2 class="navbar-brand text-center col-sm-3 col-md-2 mr-0">Trail Cam Viewer</h2>
+    </nav>
 
-    <div id="status">Waiting for SD card...</div>
-    <div id="image-container"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block bg-dark sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column" id="sidebar-ul">
+                        <!-- TODO update dynamically by getting images by date and each date listed here with a number badge -->
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+                <p id="status" class="fs-6"></p>
+                <div id="image-container" class="container">
+                    <!-- <div class="row">
+                        <div class="col-12">
+                            <h2>Image Gallery</h2>
+                        </div>
+                    </div> -->
+                    <div id="gallery" class="row"></div>
+                    <!-- Images will be dynamically inserted here by renderer.js -->
+                </div>
+            </main>
+        </div>
+    </div>
 
-    <!-- Load Renderer JavaScript -->
+    <!-- Bootstrap JS and dependencies -->
+    <script src="node_modules/jquery/dist/jquery.slim.min.js"></script>
+    <script src="node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="renderer.js"></script>
 </body>
 

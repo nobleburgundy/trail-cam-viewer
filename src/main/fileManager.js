@@ -27,9 +27,6 @@ function getImagesFromSDCard(folderPath) {
         .map((file) => {
           const filePath = path.join(folderPath, file);
           const stats = fs.statSync(filePath);
-          console.log("stats: ", stats);
-          // Check if the file is a file (not a directory)
-
           return {
             imageName: file,
             dateCreated: stats.mtime, // Use modified time as date created
