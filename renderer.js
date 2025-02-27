@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("DOM fully loaded and parsed");
-
-  const statusDiv = document.getElementById("status");
   const imageContainer = document.getElementById("image-container");
 
   // Check if running in development mode
@@ -14,11 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.env.NODE_ENV
   );
 
-  if (isDevelopment) {
-    const testPath = "src/test/SD"; // Replace with your test path
-    // statusDiv.textContent =
-    //   "Running in development mode. Loading test images...";
-  }
   loadImages();
 
   // Listen for SD card status updates from `sdCardWatcher.js`
@@ -67,8 +60,8 @@ function showImageInFullView(imageSrc) {
   const modalContent = document.createElement("div");
   modalContent.className = "modal-content";
 
-  const modalHeader = document.createElement("div");
-  modalHeader.className = "modal-footer";
+  const modalFooter = document.createElement("div");
+  modalFooter.className = "modal-footer";
 
   const closeButton = document.createElement("button");
   closeButton.className = "btn btn-primary close";
@@ -85,10 +78,10 @@ function showImageInFullView(imageSrc) {
   fullViewImage.src = imageSrc;
 
   // Append elements
-  modalHeader.appendChild(closeButton);
+  modalFooter.appendChild(closeButton);
   modalBody.appendChild(fullViewImage);
   modalContent.appendChild(modalBody);
-  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalFooter);
   modalDialog.appendChild(modalContent);
   modal.appendChild(modalDialog);
   document.body.appendChild(modal);
