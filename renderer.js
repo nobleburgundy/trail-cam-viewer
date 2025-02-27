@@ -149,10 +149,11 @@ function populateImagesOnPage(images, folderPath) {
 
     groupedImagesArray.forEach((group) => {
       const dateHeading = document.createElement("h3");
+      dateHeading.className = "text-center";
       dateHeading.textContent = `${group.date} `;
 
       const badge = document.createElement("span");
-      badge.className = "badge text-bg-success";
+      badge.className = "badge rounded-pill text-bg-success";
       badge.textContent = group.files.length;
       dateHeading.appendChild(badge);
 
@@ -165,6 +166,7 @@ function populateImagesOnPage(images, folderPath) {
           videoElement.className = "object-fit-contain";
           videoElement.src = `${folderPath}/${image.imageName}`;
           videoElement.style.width = "200px";
+          videoElement.style.cursor = "pointer";
           videoElement.onclick = () => showVideoInFullView(videoElement.src);
           imageContainer.appendChild(videoElement);
         } else {
@@ -172,6 +174,7 @@ function populateImagesOnPage(images, folderPath) {
           img.className = "img-fluid m-2";
           img.src = `${folderPath}/${image.imageName}`;
           img.style.width = "200px"; // Set thumbnail width
+          img.style.cursor = "pointer";
           img.onclick = () => showImageInFullView(img.src);
           imageContainer.appendChild(img);
         }
