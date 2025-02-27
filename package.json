@@ -6,6 +6,7 @@
   "scripts": {
     "start": "NODE_ENV=production electron .",
     "build": "electron-builder",
+    "prebuild": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "build": {
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "electron": "^34.2.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "rimraf": "^6.0.1"
   }
 }
