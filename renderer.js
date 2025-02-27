@@ -42,7 +42,6 @@ async function loadImages() {
     var folderPath = sdCardBasePath + "/100EK113/";
 
     const imageFiles = await window.electronAPI.getImages(folderPath);
-    console.log("imageFiles", imageFiles);
     populateImagesOnPage(imageFiles, folderPath);
 
     return imageFiles;
@@ -51,13 +50,57 @@ async function loadImages() {
   }
 }
 
-// function populateImagesOnPage(images) {
-//   Object.keys(images).forEach(image => {
-//     const img = document.createElement('img');
-//     img.className = 'img-fluid p-4 m-2'
-//     img.src =
-//   })
-// }
+// Function to show image in full view
+function showImageInFullView(imageSrc) {
+  console.log("showImageinFullView called", imageSrc);
+
+  // Create modal elements
+  const modal = document.createElement("div");
+  modal.className = "modal fade";
+  modal.tabIndex = -1;
+  modal.role = "dialog";
+
+  const modalDialog = document.createElement("div");
+  modalDialog.className = "modal-dialog modal-xl";
+  modalDialog.role = "document";
+
+  const modalContent = document.createElement("div");
+  modalContent.className = "modal-content";
+
+  const modalHeader = document.createElement("div");
+  modalHeader.className = "modal-header";
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "close";
+  closeButton.type = "button";
+  closeButton.dataset.dismiss = "modal";
+  closeButton.ariaLabel = "Close";
+  closeButton.innerHTML = '<span aria-hidden="true">&times;</span>';
+
+  const modalBody = document.createElement("div");
+  modalBody.className = "modal-body";
+
+  const fullViewImage = document.createElement("img");
+  fullViewImage.className = "img-fluid";
+  fullViewImage.src = imageSrc;
+
+  // Append elements
+  modalHeader.appendChild(closeButton);
+  modalBody.appendChild(fullViewImage);
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalDialog.appendChild(modalContent);
+  modal.appendChild(modalDialog);
+  document.body.appendChild(modal);
+
+  // Show the modal
+  $(modal).modal("show");
+
+  // Remove modal from DOM after it is hidden
+  $(modal).on("hidden.bs.modal", function () {
+    document.body.removeChild(modal);
+  });
+}
 
 function populateImagesOnPage(images, folderPath) {
   const imageContainer = document.getElementById("image-container");
@@ -69,7 +112,7 @@ function populateImagesOnPage(images, folderPath) {
       dateHeading.textContent = `${group.date} `;
 
       const badge = document.createElement("span");
-      badge.className = "badge badge-primary";
+      badge.className = "badge text-bg-success";
       badge.textContent = group.files.length;
       dateHeading.appendChild(badge);
 
@@ -80,17 +123,11 @@ function populateImagesOnPage(images, folderPath) {
         img.className = "img-fluid m-2";
         img.src = `${folderPath}/${image.imageName}`;
         img.style.width = "200px"; // Set thumbnail width
+        img.onclick = () => showImageInFullView(img.src);
         imageContainer.appendChild(img);
       });
     });
   });
-  // images.forEach((image) => {
-  //   const img = document.createElement("img");
-  //   img.className = "img-fluid m-2";
-  //   img.src = `${folderPath}/${image.imageName}`;
-  //   img.style.width = "200px"; // Set thumbnail width
-  //   imageContainer.appendChild(img);
-  // });
 }
 
 // Function to classify an image and display results
@@ -107,11 +144,8 @@ async function classifyAndDisplay(imagePath) {
 // Interface for an array of images grouped by date
 async function groupImagesByDate(imageFiles) {
   const groupedImages = {};
-  console.log("imagefiles", imageFiles);
 
   imageFiles.forEach((file) => {
-    console.log("file", file);
-
     const date = new Date(file.dateCreated).toLocaleDateString("en-US");
     if (!groupedImages[date]) {
       groupedImages[date] = [];
