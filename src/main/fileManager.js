@@ -2,7 +2,16 @@ const fs = require("fs");
 const path = require("path");
 
 // Supported image formats
-const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+const IMAGE_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".gif",
+  ".bmp",
+  ".webp",
+  ".mov",
+];
+const sdCardBasePath = "/Volumes/Untitled/DCIM";
 
 /**
  * Reads the contents of the SD card directory and returns image files.
@@ -10,31 +19,54 @@ const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
  * @returns {Promise<string[]>} - A list of image file names.
  */
 function getImagesFromSDCard(folderPath) {
+  folderPath = sdCardBasePath;
   console.log("getImagesFromSDCard called with path:", folderPath);
 
   return new Promise((resolve, reject) => {
-    fs.readdir(folderPath, (err, files) => {
-      if (err) {
-        console.error("Error reading SD card:", err);
-        return reject(err);
-      }
+    const imageFiles = [];
 
-      // Filter only image files and get their stats
-      const imageFiles = files
-        .filter((file) => {
-          return IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase());
-        })
-        .map((file) => {
-          const filePath = path.join(folderPath, file);
-          const stats = fs.statSync(filePath);
-          return {
-            imageName: file,
-            dateCreated: stats.mtime, // Use modified time as date created
-          };
+    function readDirectory(directory) {
+      return new Promise((resolve, reject) => {
+        fs.readdir(directory, (err, files) => {
+          if (err) {
+            console.error("Error reading directory:", err);
+            return reject(err);
+          }
+
+          const promises = files.map((file) => {
+            const filePath = path.join(directory, file);
+            return new Promise((resolve, reject) => {
+              fs.stat(filePath, (err, stats) => {
+                if (err) {
+                  console.error("Error getting file stats:", err);
+                  return reject(err);
+                }
+
+                if (stats.isDirectory()) {
+                  readDirectory(filePath).then(resolve).catch(reject);
+                } else if (
+                  IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase())
+                ) {
+                  imageFiles.push({
+                    imageName: file,
+                    dateCreated: stats.mtime, // Use modified time as date created
+                  });
+                  resolve();
+                } else {
+                  resolve();
+                }
+              });
+            });
+          });
+
+          Promise.all(promises).then(resolve).catch(reject);
         });
+      });
+    }
 
-      resolve(imageFiles);
-    });
+    readDirectory(folderPath)
+      .then(() => resolve(imageFiles))
+      .catch(reject);
   });
 }
 
