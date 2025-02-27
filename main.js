@@ -3,13 +3,15 @@ const path = require("path");
 const chokidar = require("chokidar");
 const { classifyImage } = require("./src/main/ml/imageClassifier");
 const { getImagesFromSDCard } = require("./src/main/fileManager");
+const { screen } = require("electron");
 
 let mainWindow;
 
 function createWindow() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: Math.floor(width * 0.9),
+    height: Math.floor(height * 0.9),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },

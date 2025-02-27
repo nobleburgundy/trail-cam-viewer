@@ -4,14 +4,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Check if running in development mode
   const isDevelopment = window.env.NODE_ENV === "development";
-
-  console.log(
-    "Running in development mode:",
-    isDevelopment,
-    "NODE_ENV:",
-    window.env.NODE_ENV
-  );
-
   loadImages();
 
   // Listen for SD card status updates from `sdCardWatcher.js`
@@ -41,6 +33,59 @@ async function loadImages() {
   } catch (error) {
     console.error("Error loading images:", error);
   }
+}
+
+// Function to show video in full view
+function showVideoInFullView(videoSrc) {
+  console.log("showVideoInFullView called", videoSrc);
+
+  // Create modal elements
+  const modal = document.createElement("div");
+  modal.className = "modal fade";
+  modal.tabIndex = -1;
+  modal.role = "dialog";
+
+  const modalDialog = document.createElement("div");
+  modalDialog.className = "modal-dialog";
+  modalDialog.role = "document";
+
+  const modalContent = document.createElement("div");
+  modalContent.className = "modal-content";
+
+  const modalFooter = document.createElement("div");
+  modalFooter.className = "modal-footer";
+
+  const closeButton = document.createElement("button");
+  closeButton.className = "btn btn-primary close";
+  closeButton.type = "button";
+  closeButton.setAttribute("data-bs-dismiss", "modal");
+  closeButton.ariaLabel = "Close";
+  closeButton.innerHTML = '<span aria-hidden="true">Close</span>';
+
+  const modalBody = document.createElement("div");
+  modalBody.className = "modal-body";
+
+  const fullViewVideo = document.createElement("video");
+  fullViewVideo.className = "img-fluid";
+  fullViewVideo.src = videoSrc;
+  fullViewVideo.controls = true;
+
+  // Append elements
+  modalFooter.appendChild(closeButton);
+  modalBody.appendChild(fullViewVideo);
+  modalContent.appendChild(modalBody);
+  modalContent.appendChild(modalFooter);
+  modalDialog.appendChild(modalContent);
+  modal.appendChild(modalDialog);
+  document.body.appendChild(modal);
+
+  // Show the modal
+  $(modal).modal("show");
+
+  // Remove modal from DOM after it is hidden
+  $(modal).on("hidden.bs.modal", function () {
+    document.body.removeChild(modal);
+  });
 }
 
 // Function to show image in full view
@@ -100,6 +145,8 @@ function populateImagesOnPage(images, folderPath) {
   imageContainer.innerHTML = ""; // Clear previous images
   groupImagesByDate(images).then((groupedImagesArray) => {
     groupedImagesArray.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
+    console.log("gropuedImagesArray", groupedImagesArray);
+
     groupedImagesArray.forEach((group) => {
       const dateHeading = document.createElement("h3");
       dateHeading.textContent = `${group.date} `;
@@ -112,12 +159,22 @@ function populateImagesOnPage(images, folderPath) {
       imageContainer.appendChild(dateHeading);
 
       group.files.forEach((image) => {
-        const img = document.createElement("img");
-        img.className = "img-fluid m-2";
-        img.src = `${folderPath}/${image.imageName}`;
-        img.style.width = "200px"; // Set thumbnail width
-        img.onclick = () => showImageInFullView(img.src);
-        imageContainer.appendChild(img);
+        if (image.imageName.indexOf(".mov") > -1) {
+          // this is a video file
+          const videoElement = document.createElement("video");
+          videoElement.className = "object-fit-contain";
+          videoElement.src = `${folderPath}/${image.imageName}`;
+          videoElement.style.width = "200px";
+          videoElement.onclick = () => showVideoInFullView(videoElement.src);
+          imageContainer.appendChild(videoElement);
+        } else {
+          const img = document.createElement("img");
+          img.className = "img-fluid m-2";
+          img.src = `${folderPath}/${image.imageName}`;
+          img.style.width = "200px"; // Set thumbnail width
+          img.onclick = () => showImageInFullView(img.src);
+          imageContainer.appendChild(img);
+        }
       });
     });
   });
