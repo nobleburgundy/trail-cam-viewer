@@ -68,14 +68,14 @@ function showImageInFullView(imageSrc) {
   modalContent.className = "modal-content";
 
   const modalHeader = document.createElement("div");
-  modalHeader.className = "modal-header";
+  modalHeader.className = "modal-footer";
 
   const closeButton = document.createElement("button");
-  closeButton.className = "close";
+  closeButton.className = "btn btn-primary close";
   closeButton.type = "button";
-  closeButton.dataset.dismiss = "modal";
+  closeButton.setAttribute("data-bs-dismiss", "modal");
   closeButton.ariaLabel = "Close";
-  closeButton.innerHTML = '<span aria-hidden="true">&times;</span>';
+  closeButton.innerHTML = '<span aria-hidden="true">Close</span>';
 
   const modalBody = document.createElement("div");
   modalBody.className = "modal-body";
@@ -87,8 +87,8 @@ function showImageInFullView(imageSrc) {
   // Append elements
   modalHeader.appendChild(closeButton);
   modalBody.appendChild(fullViewImage);
-  modalContent.appendChild(modalHeader);
   modalContent.appendChild(modalBody);
+  modalContent.appendChild(modalHeader);
   modalDialog.appendChild(modalContent);
   modal.appendChild(modalDialog);
   document.body.appendChild(modal);
