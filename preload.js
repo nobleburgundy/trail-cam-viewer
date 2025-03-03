@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onSDCardRemoved: (callback) => ipcRenderer.on("sd-card-removed", callback),
   getImages: (folderPath) => ipcRenderer.invoke("get-images", folderPath),
   classifyImage: (imagePath) => ipcRenderer.invoke("classify-image", imagePath),
+  unmountAndQuit: () => ipcRenderer.send("unmount-and-quit"),
 });
 
 contextBridge.exposeInMainWorld("env", {

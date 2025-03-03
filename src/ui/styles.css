@@ -1,3 +1,9 @@
+#unmount-button {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+}
+
 /* Responsive Design */
 @media (max-width: 600px) {
   #image-container {

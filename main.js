@@ -4,6 +4,7 @@ const chokidar = require("chokidar");
 const { classifyImage } = require("./src/main/ml/imageClassifier");
 const { getImagesFromSDCard } = require("./src/main/fileManager");
 const { screen } = require("electron");
+const { exec } = require("child_process");
 
 let mainWindow;
 
@@ -80,4 +81,32 @@ ipcMain.handle("classify-image", async (event, imagePath) => {
     console.error("Error classifying image:", error);
     throw error;
   }
+});
+
+// IPC handler to unmount the SD card and quit the application
+ipcMain.on("unmount-and-quit", () => {
+  console.log("unmount called on path: ", sdCardPath);
+
+  // Check if the SD card is mounted
+  exec(`diskutil info ${sdCardPath}`, (error, stdout, stderr) => {
+    if (error) {
+      console.log(`SD card not mounted: ${error.message}`);
+      app.quit();
+      return;
+    }
+
+    // If the SD card is mounted, unmount it
+    exec(
+      `diskutil unmount ${sdCardPath}`,
+      (unmountError, unmountStdout, unmountStderr) => {
+        if (unmountError) {
+          console.error(`Error unmounting SD card: ${unmountError.message}`);
+          app.quit();
+          return;
+        }
+        console.log(`SD card unmounted: ${unmountStdout}`);
+        app.quit();
+      }
+    );
+  });
 });

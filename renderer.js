@@ -16,6 +16,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("Waiting for SD card...");
     imageContainer.innerHTML = ""; // Clear images
   });
+
+  // Add event listener for unmount button
+  const unmountButton = document.getElementById("unmount-button");
+  unmountButton.addEventListener("click", () => {
+    console.log("unmount button clicked");
+
+    window.electronAPI.unmountAndQuit();
+  });
 });
 
 // Function to load images from the SD card
