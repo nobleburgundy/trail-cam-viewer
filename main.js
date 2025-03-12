@@ -95,9 +95,9 @@ ipcMain.on("unmount-and-quit", () => {
       return;
     }
 
-    // If the SD card is mounted, unmount it
+    // If the SD card is mounted, unmount it forcefully
     exec(
-      `diskutil unmount ${sdCardPath}`,
+      `diskutil unmountDisk force ${sdCardPath}`,
       (unmountError, unmountStdout, unmountStderr) => {
         if (unmountError) {
           console.error(`Error unmounting SD card: ${unmountError.message}`);
