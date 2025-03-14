@@ -12,15 +12,41 @@ const IMAGE_EXTENSIONS = [
   ".mov",
 ];
 const sdCardBasePath = "/Volumes/Untitled/DCIM";
+const sdCardFolderName = "DCIM";
+
+/**
+ * Finds the path that contains the "DCIM" folder starting with "Volumes" but excludes "Macintosh HD".
+ * @returns {string|null} - The path to the "DCIM" folder or null if not found.
+ */
+function findSDCardPath() {
+  const volumesPath = "/Volumes";
+  const directories = fs.readdirSync(volumesPath);
+
+  for (const dir of directories) {
+    if (dir !== "Macintosh HD") {
+      const potentialPath = path.join(volumesPath, dir, sdCardFolderName);
+      if (fs.existsSync(potentialPath)) {
+        return potentialPath;
+      }
+    }
+  }
+
+  return null;
+}
 
 /**
  * Reads the contents of the SD card directory and returns image files.
  * @param {string} folderPath - The path to the mounted SD card.
- * @returns {Promise<string[]>} - A list of image file names.
+ * @returns {Promise<string[]>} - A list of image file names, path, and date modified.
  */
-function getImagesFromSDCard(folderPath) {
-  folderPath = sdCardBasePath;
-  console.log("getImagesFromSDCard called with path:", folderPath);
+function getImagesFromSDCard() {
+  // console.log("getImagesFromSDCard called with path:", folderPath);
+  const folderPath = findSDCardPath();
+  // console.log(
+  //   "getImagesFromSDCard folderPath",
+  //   folderPath,
+  //   "(from find sd card path function)"
+  // );
 
   return new Promise((resolve, reject) => {
     const imageFiles = [];
@@ -49,6 +75,7 @@ function getImagesFromSDCard(folderPath) {
                 ) {
                   imageFiles.push({
                     imageName: file,
+                    imagePath: filePath,
                     dateCreated: stats.mtime, // Use modified time as date created
                   });
                   resolve();

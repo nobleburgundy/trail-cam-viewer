@@ -29,13 +29,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Function to load images from the SD card
 async function loadImages() {
   try {
-    const sdCardBasePath = "/Volumes/Untitled/DCIM";
+    // const sdCardBasePath = "/Volumes/Untitled/DCIM";
 
     // Fetch image list from the main process
-    var folderPath = sdCardBasePath + "/100EK113/";
+    // var folderPath = sdCardBasePath + "/100EK113/";
 
-    const imageFiles = await window.electronAPI.getImages(folderPath);
-    populateImagesOnPage(imageFiles, folderPath);
+    const imageFiles = await window.electronAPI.getImages();
+
+    populateImagesOnPage(imageFiles);
 
     return imageFiles;
   } catch (error) {
@@ -148,7 +149,7 @@ function showImageInFullView(imageSrc) {
   });
 }
 
-function populateImagesOnPage(images, folderPath) {
+function populateImagesOnPage(images) {
   const imageContainer = document.getElementById("image-container");
   imageContainer.innerHTML = ""; // Clear previous images
   groupImagesByDate(images).then((groupedImagesArray) => {
@@ -168,11 +169,17 @@ function populateImagesOnPage(images, folderPath) {
       imageContainer.appendChild(dateHeading);
 
       group.files.forEach((image) => {
+        // console.log(
+        //   "populateImagesonPath image name and path",
+        //   image.imageName,
+        //   image.imagePath
+        // );
+
         if (image.imageName.indexOf(".mov") > -1) {
           // this is a video file
           const videoElement = document.createElement("video");
           videoElement.className = "object-fit-contain";
-          videoElement.src = `${folderPath}/${image.imageName}`;
+          videoElement.src = image.imagePath;
           videoElement.style.width = "200px";
           videoElement.style.cursor = "pointer";
           videoElement.onclick = () => showVideoInFullView(videoElement.src);
@@ -180,7 +187,7 @@ function populateImagesOnPage(images, folderPath) {
         } else {
           const img = document.createElement("img");
           img.className = "img-fluid m-2";
-          img.src = `${folderPath}/${image.imageName}`;
+          img.src = image.imagePath;
           img.style.width = "200px"; // Set thumbnail width
           img.style.cursor = "pointer";
           img.onclick = () => showImageInFullView(img.src);

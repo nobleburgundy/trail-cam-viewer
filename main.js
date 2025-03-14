@@ -44,10 +44,8 @@ const watcher = chokidar.watch(sdCardPath, {
 
 watcher
   .on("add", (filePath) => {
-    console.log(`SD card mounted: ${filePath}`);
+    // console.log(`SD card mounted: ${filePath}`);
     if (mainWindow) {
-      console.log("mainwindow send sdCardPath", sdCardPath);
-
       mainWindow.webContents.send("sd-card-mounted", String(sdCardPath));
     }
   })
@@ -59,12 +57,9 @@ watcher
   });
 
 // IPC handler to get images from a folder
-ipcMain.handle("get-images", async (event, folderPath) => {
-  console.log("get-images handler folderPath", folderPath);
-
+ipcMain.handle("get-images", async (event) => {
   try {
-    const fullPath = path.join(folderPath, "DCIM/100EK113");
-    const imageFiles = await getImagesFromSDCard(fullPath);
+    const imageFiles = await getImagesFromSDCard();
     return imageFiles; // Return the full image file objects
   } catch (error) {
     console.error("Error reading images:", error);
