@@ -71,7 +71,9 @@ function getImagesFromSDCard() {
                 if (stats.isDirectory()) {
                   readDirectory(filePath).then(resolve).catch(reject);
                 } else if (
-                  IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase())
+                  IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase()) &&
+                  // exclude files that start with "._" that can be temps after copied
+                  file.substring(0, 1) !== "."
                 ) {
                   imageFiles.push({
                     imageName: file,
