@@ -24,6 +24,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     window.electronAPI.unmountAndQuit();
   });
+
+  let showingFavorites = false;
+  const favoritesButton = document.getElementById("favorites-button");
+  favoritesButton.addEventListener("click", () => {
+    showingFavorites = !showingFavorites;
+    if (showingFavorites) {
+      favoritesButton.textContent = "Show All";
+      loadFavorites();
+    } else {
+      favoritesButton.textContent = "Favorites";
+      loadImages();
+    }
+  });
 });
 
 // Function to load images from the SD card
@@ -98,7 +111,7 @@ function showVideoInFullView(videoSrc) {
 }
 
 // Function to show image in full view
-function showImageInFullView(imageSrc) {
+async function showImageInFullView(imageSrc) {
   console.log("showImageinFullView called", imageSrc);
 
   // Create modal elements
@@ -117,6 +130,35 @@ function showImageInFullView(imageSrc) {
   const modalFooter = document.createElement("div");
   modalFooter.className = "modal-footer";
 
+  const favorites = await window.electronAPI.getFavorites();
+  let isFavorite = favorites.includes(imageSrc);
+
+  let favButton;
+  if (isFavorite) {
+    favButton = document.createElement("button");
+    favButton.className = "btn btn-danger";
+    favButton.type = "button";
+    favButton.textContent = "Remove from Favorites";
+    favButton.onclick = async () => {
+      try {
+        const response = await window.electronAPI.removeFromFavorites(imageSrc);
+        alert(response.message);
+        $(modal).modal("hide");
+      } catch (error) {
+        console.error("Error removing from favorites:", error);
+        alert("Failed to remove image from favorites.");
+      }
+    };
+  } else {
+    favButton = document.createElement("button");
+    favButton.className = "btn btn-warning";
+    favButton.type = "button";
+    favButton.textContent = "Add to Favorites";
+    favButton.onclick = () => {
+      saveToFavorites(imageSrc);
+    };
+  }
+
   const closeButton = document.createElement("button");
   closeButton.className = "btn btn-primary close";
   closeButton.type = "button";
@@ -132,6 +174,7 @@ function showImageInFullView(imageSrc) {
   fullViewImage.src = imageSrc;
 
   // Append elements
+  modalFooter.appendChild(favButton);
   modalFooter.appendChild(closeButton);
   modalBody.appendChild(fullViewImage);
   modalContent.appendChild(modalBody);
@@ -147,6 +190,43 @@ function showImageInFullView(imageSrc) {
   $(modal).on("hidden.bs.modal", function () {
     document.body.removeChild(modal);
   });
+}
+
+async function saveToFavorites(imageSrc) {
+  try {
+    const response = await window.electronAPI.addToFavorites(imageSrc);
+    alert(response.message);
+  } catch (error) {
+    console.error("Error saving to favorites:", error);
+    alert("Failed to save image to favorites.");
+  }
+}
+
+async function loadFavorites() {
+  try {
+    const favorites = await window.electronAPI.getFavorites();
+    const imageContainer = document.getElementById("image-container");
+    imageContainer.innerHTML = ""; // Clear previous images
+
+    if (favorites.length === 0) {
+      imageContainer.innerHTML =
+        "<p class='text-center'>No favorite images found.</p>";
+      return;
+    }
+
+    favorites.forEach((imageSrc) => {
+      const img = document.createElement("img");
+      img.className = "img-fluid m-2";
+      img.src = imageSrc;
+      img.style.width = "200px"; // Set thumbnail width
+      img.style.cursor = "pointer";
+      img.onclick = () => showImageInFullView(img.src);
+      imageContainer.appendChild(img);
+    });
+  } catch (error) {
+    console.error("Error loading favorites:", error);
+    alert("Failed to load favorite images.");
+  }
 }
 
 function populateImagesOnPage(images) {
@@ -182,7 +262,9 @@ function populateImagesOnPage(images) {
           videoElement.src = image.imagePath;
           videoElement.style.width = "200px";
           videoElement.style.cursor = "pointer";
-          videoElement.onclick = () => showVideoInFullView(videoElement.src);
+          videoElement.onclick = () => {
+            showVideoInFullView(videoElement.src);
+          };
           imageContainer.appendChild(videoElement);
         } else {
           const img = document.createElement("img");
@@ -190,7 +272,9 @@ function populateImagesOnPage(images) {
           img.src = image.imagePath;
           img.style.width = "200px"; // Set thumbnail width
           img.style.cursor = "pointer";
-          img.onclick = () => showImageInFullView(img.src);
+          img.onclick = () => {
+            showImageInFullView(img.src);
+          };
           imageContainer.appendChild(img);
         }
       });

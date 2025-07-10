@@ -5,8 +5,19 @@ const { classifyImage } = require("./src/main/ml/imageClassifier");
 const { getImagesFromSDCard } = require("./src/main/fileManager");
 const { screen } = require("electron");
 const { exec } = require("child_process");
+const sqlite3 = require("better-sqlite3");
 
 let mainWindow;
+
+// Initialize SQLite database
+const db = sqlite3(path.join(app.getPath("userData"), "favorites.db"));
+
+// Create the favorites table if it doesn't exist
+const createTableQuery = `CREATE TABLE IF NOT EXISTS favorites (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  imageSrc TEXT UNIQUE NOT NULL
+)`;
+db.prepare(createTableQuery).run();
 
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -104,4 +115,43 @@ ipcMain.on("unmount-and-quit", () => {
       }
     );
   });
+});
+
+// IPC handler to add an image to favorites
+ipcMain.handle("add-to-favorites", (event, imageSrc) => {
+  try {
+    const insertQuery = `INSERT OR IGNORE INTO favorites (imageSrc) VALUES (?)`;
+    db.prepare(insertQuery).run(imageSrc);
+    return { success: true, message: "Image added to favorites." };
+  } catch (error) {
+    console.error("Error adding to favorites:", error);
+    return { success: false, message: "Failed to add image to favorites." };
+  }
+});
+
+// IPC handler to remove an image from favorites
+ipcMain.handle("remove-from-favorites", (event, imageSrc) => {
+  try {
+    const deleteQuery = `DELETE FROM favorites WHERE imageSrc = ?`;
+    db.prepare(deleteQuery).run(imageSrc);
+    return { success: true, message: "Image removed from favorites." };
+  } catch (error) {
+    console.error("Error removing from favorites:", error);
+    return {
+      success: false,
+      message: "Failed to remove image from favorites.",
+    };
+  }
+});
+
+// IPC handler to retrieve all favorite images
+ipcMain.handle("get-favorites", () => {
+  try {
+    const selectQuery = `SELECT imageSrc FROM favorites`;
+    const favorites = db.prepare(selectQuery).all();
+    return favorites.map((row) => row.imageSrc);
+  } catch (error) {
+    console.error("Error retrieving favorites:", error);
+    return [];
+  }
 });
