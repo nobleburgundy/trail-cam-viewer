@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   removeFromFavorites: (imageSrc) =>
     ipcRenderer.invoke("remove-from-favorites", imageSrc),
   getFavorites: () => ipcRenderer.invoke("get-favorites"),
+  sendEmail: (emailOptions) => ipcRenderer.invoke("send-email", emailOptions),
 });
 
 contextBridge.exposeInMainWorld("env", {

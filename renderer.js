@@ -166,6 +166,16 @@ async function showImageInFullView(imageSrc) {
   closeButton.ariaLabel = "Close";
   closeButton.innerHTML = '<span aria-hidden="true">Close</span>';
 
+  // Email button
+  const emailButton = document.createElement("button");
+  emailButton.className = "btn btn-info";
+  emailButton.type = "button";
+  emailButton.textContent = "Email";
+  emailButton.onclick = () => {
+    // Show email modal form
+    showEmailModal(imageSrc);
+  };
+
   const modalBody = document.createElement("div");
   modalBody.className = "modal-body";
 
@@ -175,6 +185,7 @@ async function showImageInFullView(imageSrc) {
 
   // Append elements
   modalFooter.appendChild(favButton);
+  modalFooter.appendChild(emailButton);
   modalFooter.appendChild(closeButton);
   modalBody.appendChild(fullViewImage);
   modalContent.appendChild(modalBody);
@@ -315,4 +326,76 @@ async function groupImagesByDate(imageFiles) {
   });
 
   return groupedImagesArray;
+}
+
+// Add email modal form functionality
+function showEmailModal(imageSrc) {
+  // Create modal elements
+  const modal = document.createElement("div");
+  modal.className = "modal fade";
+  modal.tabIndex = -1;
+  modal.role = "dialog";
+
+  const modalDialog = document.createElement("div");
+  modalDialog.className = "modal-dialog";
+  modalDialog.role = "document";
+
+  const modalContent = document.createElement("div");
+  modalContent.className = "modal-content";
+
+  const modalHeader = document.createElement("div");
+  modalHeader.className = "modal-header";
+  modalHeader.innerHTML = '<h5 class="modal-title">Send Image via Email</h5>';
+
+  const modalBody = document.createElement("div");
+  modalBody.className = "modal-body";
+
+  // Email form
+  const form = document.createElement("form");
+  form.innerHTML = `
+    <div class="mb-3">
+      <label for="recipient" class="form-label">Recipient Email</label>
+      <input type="email" class="form-control" id="recipient" required />
+    </div>
+    <div class="mb-3">
+      <label for="subject" class="form-label">Subject</label>
+      <input type="text" class="form-control" id="subject" value="Trail Cam Image" required />
+    </div>
+    <div class="mb-3">
+      <label for="message" class="form-label">Message</label>
+      <textarea class="form-control" id="message" rows="3">See attached image from Trail Cam Viewer.</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Send Email</button>
+  `;
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const to = form.querySelector("#recipient").value;
+    const subject = form.querySelector("#subject").value;
+    const text = form.querySelector("#message").value;
+    // Send email via IPC
+    const result = await window.electronAPI.sendEmail({
+      to,
+      subject,
+      text,
+      imagePath: imageSrc,
+    });
+    alert(result.message);
+    $(modal).modal("hide");
+  };
+
+  modalBody.appendChild(form);
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalDialog.appendChild(modalContent);
+  modal.appendChild(modalDialog);
+  document.body.appendChild(modal);
+
+  // Show the modal
+  $(modal).modal("show");
+
+  // Remove modal from DOM after it is hidden
+  $(modal).on("hidden.bs.modal", function () {
+    document.body.removeChild(modal);
+  });
 }

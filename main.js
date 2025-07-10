@@ -6,6 +6,8 @@ const { getImagesFromSDCard } = require("./src/main/fileManager");
 const { screen } = require("electron");
 const { exec } = require("child_process");
 const sqlite3 = require("better-sqlite3");
+const fs = require("fs");
+const nodemailer = require("nodemailer");
 
 let mainWindow;
 
@@ -153,5 +155,47 @@ ipcMain.handle("get-favorites", () => {
   } catch (error) {
     console.error("Error retrieving favorites:", error);
     return [];
+  }
+});
+
+// IPC handler to send an email with image attachment
+ipcMain.handle("send-email", async (event, emailOptions) => {
+  try {
+    // Read SMTP config
+    const configPath = path.join(__dirname, "email-config.json");
+    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      host: config.server,
+      port: config.port,
+      secure: config.port === 465, // true for 465, false for other ports
+      auth: {
+        user: config.username,
+        pass: config.password,
+      },
+    });
+
+    // Send mail
+    const mailOptions = {
+      from: config.username,
+      to: emailOptions.to,
+      subject: emailOptions.subject,
+      text: emailOptions.text,
+      attachments: [
+        {
+          path: emailOptions.imagePath,
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+    return { success: true, message: "Email sent successfully." };
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return {
+      success: false,
+      message: "Failed to send email: " + error.message,
+    };
   }
 });
