@@ -6,6 +6,12 @@ const {
   getImagesFromSDCard,
   getImagesFromFolder,
 } = require("./src/main/fileManager");
+
+// IPC handler to get the favorites directory path
+ipcMain.handle("get-favorites-path", () => {
+  return path.join(app.getPath("userData"), "favorites");
+});
+
 // IPC handler to get images from a specified folder (for testing)
 ipcMain.handle("get-images-from-folder", async (event, folderPath) => {
   try {
@@ -135,8 +141,37 @@ ipcMain.on("unmount-and-quit", () => {
 // IPC handler to add an image to favorites
 ipcMain.handle("add-to-favorites", (event, imageSrc) => {
   try {
+    // Get userData/favorites path
+    const favoritesDir = path.join(app.getPath("userData"), "favorites");
+    if (!fs.existsSync(favoritesDir)) {
+      fs.mkdirSync(favoritesDir, { recursive: true });
+    }
+    // Remove file:// prefix if present
+    let srcPath = imageSrc;
+    if (srcPath.startsWith("file://")) {
+      srcPath = srcPath.replace("file://", "");
+    }
+    // Copy image to favorites dir
+    const ext = path.extname(srcPath);
+    const baseName = path.basename(srcPath, ext);
+
+    // Add timestamp to avoid collisions
+    const timestamp = Date.now();
+    const destName = `${baseName}_${timestamp}${ext}`;
+    const destPath = path.join(favoritesDir, destName);
+    console.log("favpath", favoritesDir, "destPath", destPath);
+
+    if (!fs.existsSync(favoritesDir)) {
+      fs.mkdirSync(favoritesDir, { recursive: true });
+      console.log("favdir created", favoritesDir);
+    }
+
+    fs.copyFileSync(srcPath, destPath);
+    console.log("Image added to favorites. src", srcPath, "destPath", destPath);
+
+    // Save local path in DB
     const insertQuery = `INSERT OR IGNORE INTO favorites (imageSrc) VALUES (?)`;
-    db.prepare(insertQuery).run(imageSrc);
+    db.prepare(insertQuery).run(destPath);
     return { success: true, message: "Image added to favorites." };
   } catch (error) {
     console.error("Error adding to favorites:", error);
@@ -147,6 +182,20 @@ ipcMain.handle("add-to-favorites", (event, imageSrc) => {
 // IPC handler to remove an image from favorites
 ipcMain.handle("remove-from-favorites", (event, imageSrc) => {
   try {
+    // Ensure favorites directory exists before removing
+    const favoritesDir = path.join(app.getPath("userData"), "favorites");
+    if (!fs.existsSync(favoritesDir)) {
+      fs.mkdirSync(favoritesDir, { recursive: true });
+    }
+    // Remove image file from disk
+    if (fs.existsSync(imageSrc)) {
+      try {
+        fs.unlinkSync(imageSrc);
+      } catch (err) {
+        console.error("Error deleting favorite image file:", err);
+      }
+    }
+    // Remove from DB
     const deleteQuery = `DELETE FROM favorites WHERE imageSrc = ?`;
     db.prepare(deleteQuery).run(imageSrc);
     return { success: true, message: "Image removed from favorites." };
