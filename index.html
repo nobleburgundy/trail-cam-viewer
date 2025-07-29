@@ -11,14 +11,21 @@
 </head>
 
 <body class="font-monospace">
-    <h1 class="display-1 text-center">Trail Cam Viewer</h1>
-    <!-- <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-        <div id="status" class="alert alert-info text-center">Waiting for SD card...</div>
-    </nav> -->
+    <header class="py-3 mb-2 border-bottom bg-dark">
+        <h1 class="display-1 text-center text-light">Trail Cam Viewer</h1>
+    </header>
+
+    <nav class="navbar navbar-expand bg-dark mb-4">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <button class="btn btn-warning btn-lg" id="favorites-button">Favorites</button>
+                <div id="favorites-header" class="flex-grow-1 text-center"></div>
+                <button class="btn btn-danger btn-lg" id="unmount-button">Quit</button>
+            </div>
+        </div>
+    </nav>
 
     <div class="container-fluid">
-        <button class="btn btn-danger btn-lg" id="unmount-button">Quit</button>
-        <button class="btn btn-warning btn-lg" id="favorites-button">Favorites</button>
         <div class="row">
             <div class="col" id="image-container">
                 <p class="text-center">No SD card found. Please connect the SD card reader to the computer.</p>
@@ -40,6 +47,15 @@
     <script src="node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="renderer.js"></script>
+    <script>
+        // Dynamically show h2 'Favorites' in navbar when on Favorites page
+        window.addEventListener('DOMContentLoaded', function () {
+            const favoritesHeader = document.getElementById('favorites-header');
+            window.showFavoritesHeader = function (show) {
+                favoritesHeader.innerHTML = show ? '<h2>Favorite Images</h2>' : '';
+            };
+        });
+    </script>
 </body>
 
 </html>

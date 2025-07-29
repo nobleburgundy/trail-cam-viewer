@@ -48,12 +48,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.showingFavorites = !window.showingFavorites;
     if (window.showingFavorites) {
       favoritesButton.textContent = "Show All";
+      if (window.showFavoritesHeader) window.showFavoritesHeader(true);
       // Get userData/favorites path from main process
       const favoritesPath = await window.electronAPI.getFavoritesPath();
       console.log("Favorites directory:", favoritesPath);
       loadFavorites();
     } else {
       favoritesButton.textContent = "Favorites";
+      if (window.showFavoritesHeader) window.showFavoritesHeader(false);
       loadImages(testFolderPath, loadImagesFromTestPath);
     }
   });
