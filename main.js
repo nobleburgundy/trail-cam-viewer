@@ -112,27 +112,27 @@ ipcMain.handle("classify-image", async (event, imagePath) => {
 
 // IPC handler to unmount the SD card and quit the application
 ipcMain.on("unmount-and-quit", () => {
-  console.log("unmount called on path: ", sdCardPath);
-
+  // Suppress error dialogs and quit cleanly
+  const isDevelopment = process.env.NODE_ENV === "development";
   // Check if the SD card is mounted
   exec(`diskutil info ${sdCardPath}`, (error, stdout, stderr) => {
     if (error) {
-      console.log(`SD card not mounted: ${error.message}`);
-      app.quit();
+      if (isDevelopment) console.log(`SD card not mounted: ${error.message}`);
+      app.exit(0); // Suppress OS error dialogs
       return;
     }
-
     // If the SD card is mounted, unmount it forcefully
     exec(
       `diskutil unmountDisk force ${sdCardPath}`,
       (unmountError, unmountStdout, unmountStderr) => {
         if (unmountError) {
-          console.error(`Error unmounting SD card: ${unmountError.message}`);
-          app.quit();
+          if (isDevelopment)
+            console.error(`Error unmounting SD card: ${unmountError.message}`);
+          app.exit(0); // Suppress OS error dialogs
           return;
         }
-        console.log(`SD card unmounted: ${unmountStdout}`);
-        app.quit();
+        if (isDevelopment) console.log(`SD card unmounted: ${unmountStdout}`);
+        app.exit(0); // Suppress OS error dialogs
       }
     );
   });

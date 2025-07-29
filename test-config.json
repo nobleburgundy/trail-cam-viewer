@@ -1,4 +1,4 @@
 {
   "testFolderPath": "src/test/SD",
-  "loadImagesFromTestPath": true
+  "loadImagesFromTestPath": false
 }
