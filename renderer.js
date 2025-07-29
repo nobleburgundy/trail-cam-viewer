@@ -116,7 +116,7 @@ function showVideoInFullView(videoSrc) {
     if (isFavorite) {
       if (window.showingFavorites) {
         favButton = document.createElement("button");
-        favButton.className = "btn btn-danger me-auto";
+        favButton.className = "btn btn-danger btn-lg me-auto";
         favButton.type = "button";
         favButton.textContent = "Remove from Favorites";
         favButton.onclick = async () => {
@@ -137,10 +137,10 @@ function showVideoInFullView(videoSrc) {
           }
         };
       } else {
-        favButton = document.createElement("span");
-        favButton.className = "text-success me-auto";
-        favButton.innerHTML =
-          'Added to Favorites. <a href="#" id="goto-favorites">Go to Favorites</a>';
+        favButton = document.createElement("button");
+        favButton.className = "btn btn-success btn-lg me-auto";
+        favButton.id = "goto-favorites";
+        favButton.innerText = "Go to Favorites.";
         setTimeout(() => {
           const link = document.getElementById("goto-favorites");
           if (link) {
@@ -155,7 +155,7 @@ function showVideoInFullView(videoSrc) {
       }
     } else {
       favButton = document.createElement("button");
-      favButton.className = "btn btn-warning me-auto";
+      favButton.className = "btn btn-warning btn-lg me-auto";
       favButton.type = "button";
       favButton.textContent = "Add to Favorites";
       favButton.onclick = () => {
@@ -164,7 +164,7 @@ function showVideoInFullView(videoSrc) {
     }
 
     const closeButton = document.createElement("button");
-    closeButton.className = "btn btn-primary close";
+    closeButton.className = "btn btn-primary btn-lg close";
     closeButton.type = "button";
     closeButton.setAttribute("data-bs-dismiss", "modal");
     closeButton.ariaLabel = "Close";
@@ -232,7 +232,7 @@ async function showImageInFullView(imageSrc) {
   if (isFavorite) {
     if (window.showingFavorites) {
       favButton = document.createElement("button");
-      favButton.className = "btn btn-danger me-auto";
+      favButton.className = "btn btn-danger btn-lg me-auto";
       favButton.type = "button";
       favButton.textContent = "Remove from Favorites";
       favButton.onclick = async () => {
@@ -253,17 +253,21 @@ async function showImageInFullView(imageSrc) {
         }
       };
     } else {
-      favButton = document.createElement("span");
-      favButton.className = "text-success me-auto";
-      favButton.innerHTML =
-        'Added to Favorites. <a href="#" id="goto-favorites">Go to Favorites</a>';
+      favButton = document.createElement("button");
+      favButton.className = "btn btn-success btn-lg me-auto";
+      favButton.id = "goto-favorites";
+      favButton.innerText = "Go to Favorites.";
       setTimeout(() => {
         const link = document.getElementById("goto-favorites");
         if (link) {
           link.onclick = (e) => {
             e.preventDefault();
             window.showingFavorites = true;
-            document.getElementById("favorites-button").click();
+            $(modal).on("hidden.bs.modal", function () {
+              document.getElementById("favorites-button").textContent =
+                "Show All";
+              loadFavorites();
+            });
             $(modal).modal("hide");
           };
         }
@@ -271,7 +275,7 @@ async function showImageInFullView(imageSrc) {
     }
   } else {
     favButton = document.createElement("button");
-    favButton.className = "btn btn-warning me-auto";
+    favButton.className = "btn btn-warning btn-lg me-auto";
     favButton.type = "button";
     favButton.textContent = "Add to Favorites";
     favButton.onclick = () => {
@@ -280,7 +284,7 @@ async function showImageInFullView(imageSrc) {
   }
 
   const closeButton = document.createElement("button");
-  closeButton.className = "btn btn-primary close";
+  closeButton.className = "btn btn-primary btn-lg close";
   closeButton.type = "button";
   closeButton.setAttribute("data-bs-dismiss", "modal");
   closeButton.ariaLabel = "Close";
@@ -480,7 +484,7 @@ function showEmailModal(imageSrc) {
     <label for="message" class="form-label">Message</label>
     <textarea class="form-control" id="message" rows="3">See attached image from Trail Cam Viewer.</textarea>
   </div>
-  <button type="submit" class="btn btn-primary">Send Email</button>
+  <button type="submit" class="btn btn-primary btn-lg">Send Email</button>
 `;
 
   form.onsubmit = async (e) => {
@@ -559,7 +563,7 @@ function showVideoInFullView(videoSrc) {
   modalFooter.className = "modal-footer";
 
   loadImages(testFolderPath, loadImagesFromTestPath);
-  closeButton.className = "btn btn-primary close";
+  closeButton.className = "btn btn-primary btn-lg close";
   closeButton.type = "button";
   closeButton.setAttribute("data-bs-dismiss", "modal");
   closeButton.ariaLabel = "Close";
@@ -621,7 +625,7 @@ function showVideoInFullView(videoSrc) {
     let favButton;
     if (isFavorite) {
       favButton = document.createElement("button");
-      favButton.className = "btn btn-danger";
+      favButton.className = "btn btn-danger btn-lg";
       favButton.type = "button";
       favButton.textContent = "Remove from Favorites";
       favButton.onclick = async () => {
@@ -639,7 +643,7 @@ function showVideoInFullView(videoSrc) {
       };
     } else {
       favButton = document.createElement("button");
-      favButton.className = "btn btn-warning";
+      favButton.className = "btn btn-warning btn-lg";
       favButton.type = "button";
       favButton.textContent = "Add to Favorites";
       favButton.onclick = () => {
@@ -648,7 +652,7 @@ function showVideoInFullView(videoSrc) {
     }
 
     const closeButton = document.createElement("button");
-    closeButton.className = "btn btn-primary close";
+    closeButton.className = "btn btn-primary btn-lg close";
     closeButton.type = "button";
     closeButton.setAttribute("data-bs-dismiss", "modal");
     closeButton.ariaLabel = "Close";
@@ -854,7 +858,7 @@ function showVideoInFullView(videoSrc) {
       <label for="message" class="form-label">Message</label>
       <textarea class="form-control" id="message" rows="3">See attached image from Trail Cam Viewer.</textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Send Email</button>
+    <button type="submit" class="btn btn-primary btn-lg">Send Email</button>
   `;
 
     form.onsubmit = async (e) => {
