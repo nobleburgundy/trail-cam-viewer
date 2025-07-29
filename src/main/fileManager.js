@@ -114,7 +114,61 @@ function checkIfPathExists(folderPath) {
   return pathExists;
 }
 
+/**
+ * Reads the contents of any folder and returns image files (same format as SD card).
+ * @param {string} folderPath - The path to the folder.
+ * @returns {Promise<Array>} - List of image file objects.
+ */
+function getImagesFromFolder(folderPath) {
+  return new Promise((resolve, reject) => {
+    const imageFiles = [];
+
+    function readDirectory(directory) {
+      return new Promise((resolve, reject) => {
+        fs.readdir(directory, (err, files) => {
+          if (err) {
+            console.error("Error reading directory:", err);
+            return reject(err);
+          }
+          const promises = files.map((file) => {
+            const filePath = path.join(directory, file);
+            return new Promise((resolve, reject) => {
+              fs.stat(filePath, (err, stats) => {
+                if (err) {
+                  console.error("Error getting file stats:", err);
+                  return reject(err);
+                }
+                if (stats.isDirectory()) {
+                  readDirectory(filePath).then(resolve).catch(reject);
+                } else if (
+                  IMAGE_EXTENSIONS.includes(path.extname(file).toLowerCase()) &&
+                  file.substring(0, 1) !== "."
+                ) {
+                  imageFiles.push({
+                    imageName: file,
+                    imagePath: filePath,
+                    dateCreated: stats.mtime,
+                  });
+                  resolve();
+                } else {
+                  resolve();
+                }
+              });
+            });
+          });
+          Promise.all(promises).then(resolve).catch(reject);
+        });
+      });
+    }
+
+    readDirectory(folderPath)
+      .then(() => resolve(imageFiles))
+      .catch(reject);
+  });
+}
+
 module.exports = {
   getImagesFromSDCard,
+  getImagesFromFolder,
   checkIfPathExists,
 };

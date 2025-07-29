@@ -2,7 +2,20 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const chokidar = require("chokidar");
 const { classifyImage } = require("./src/main/ml/imageClassifier");
-const { getImagesFromSDCard } = require("./src/main/fileManager");
+const {
+  getImagesFromSDCard,
+  getImagesFromFolder,
+} = require("./src/main/fileManager");
+// IPC handler to get images from a specified folder (for testing)
+ipcMain.handle("get-images-from-folder", async (event, folderPath) => {
+  try {
+    const imageFiles = await getImagesFromFolder(folderPath);
+    return imageFiles;
+  } catch (error) {
+    console.error("Error reading images from folder:", error);
+    throw error;
+  }
+});
 const { screen } = require("electron");
 const { exec } = require("child_process");
 const sqlite3 = require("better-sqlite3");
