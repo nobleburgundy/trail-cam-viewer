@@ -42,11 +42,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.electronAPI.unmountAndQuit();
   });
 
-  let showingFavorites = false;
+  window.showingFavorites = false;
   const favoritesButton = document.getElementById("favorites-button");
   favoritesButton.addEventListener("click", async () => {
-    showingFavorites = !showingFavorites;
-    if (showingFavorites) {
+    window.showingFavorites = !window.showingFavorites;
+    if (window.showingFavorites) {
       favoritesButton.textContent = "Show All";
       // Get userData/favorites path from main process
       const favoritesPath = await window.electronAPI.getFavoritesPath();
@@ -100,37 +100,102 @@ function showVideoInFullView(videoSrc) {
   const modalFooter = document.createElement("div");
   modalFooter.className = "modal-footer";
 
-  const closeButton = document.createElement("button");
-  closeButton.className = "btn btn-primary close";
-  closeButton.type = "button";
-  closeButton.setAttribute("data-bs-dismiss", "modal");
-  closeButton.ariaLabel = "Close";
-  closeButton.innerHTML = '<span aria-hidden="true">Close</span>';
+  // Favorites button logic for videos
+  (async () => {
+    const favorites = await window.electronAPI.getFavorites();
+    // Compare base filename (without timestamp) for favorites check
+    const getBaseName = (filePath) => {
+      const fileName = filePath.split("/").pop();
+      // Remove timestamp if present (e.g., VID_1234567890123.MOV -> VID.MOV)
+      return fileName.replace(/_\d{13}(\.[^.]+)$/i, "$1");
+    };
+    const videoBase = getBaseName(videoSrc);
+    let isFavorite = favorites.some((fav) => getBaseName(fav) === videoBase);
 
-  const modalBody = document.createElement("div");
-  modalBody.className = "modal-body";
+    let favButton;
+    if (isFavorite) {
+      if (window.showingFavorites) {
+        favButton = document.createElement("button");
+        favButton.className = "btn btn-danger";
+        favButton.type = "button";
+        favButton.textContent = "Remove from Favorites";
+        favButton.onclick = async () => {
+          try {
+            const response = await window.electronAPI.removeFromFavorites(
+              videoSrc
+            );
+            console.log(`Removed from Favorites: ${videoSrc}`);
+            alert(response.message);
+            $(modal).modal("hide");
+            // Refresh favorites after modal is hidden
+            $(modal).on("hidden.bs.modal", function () {
+              loadFavorites();
+            });
+          } catch (error) {
+            console.error("Error removing from favorites:", error);
+            alert("Failed to remove video from favorites.");
+          }
+        };
+      } else {
+        favButton = document.createElement("span");
+        favButton.className = "text-success";
+        favButton.innerHTML =
+          'Added to Favorites. <a href="#" id="goto-favorites">Go to Favorites</a>';
+        setTimeout(() => {
+          const link = document.getElementById("goto-favorites");
+          if (link) {
+            link.onclick = (e) => {
+              e.preventDefault();
+              window.showingFavorites = true;
+              document.getElementById("favorites-button").click();
+              $(modal).modal("hide");
+            };
+          }
+        }, 0);
+      }
+    } else {
+      favButton = document.createElement("button");
+      favButton.className = "btn btn-warning";
+      favButton.type = "button";
+      favButton.textContent = "Add to Favorites";
+      favButton.onclick = () => {
+        saveToFavorites(videoSrc);
+      };
+    }
 
-  const fullViewVideo = document.createElement("video");
-  fullViewVideo.className = "img-fluid";
-  fullViewVideo.src = videoSrc;
-  fullViewVideo.controls = true;
+    const closeButton = document.createElement("button");
+    closeButton.className = "btn btn-primary close";
+    closeButton.type = "button";
+    closeButton.setAttribute("data-bs-dismiss", "modal");
+    closeButton.ariaLabel = "Close";
+    closeButton.innerHTML = '<span aria-hidden="true">Close</span>';
 
-  // Append elements
-  modalFooter.appendChild(closeButton);
-  modalBody.appendChild(fullViewVideo);
-  modalContent.appendChild(modalBody);
-  modalContent.appendChild(modalFooter);
-  modalDialog.appendChild(modalContent);
-  modal.appendChild(modalDialog);
-  document.body.appendChild(modal);
+    const modalBody = document.createElement("div");
+    modalBody.className = "modal-body";
 
-  // Show the modal
-  $(modal).modal("show");
+    const fullViewVideo = document.createElement("video");
+    fullViewVideo.className = "img-fluid";
+    fullViewVideo.src = videoSrc;
+    fullViewVideo.controls = true;
 
-  // Remove modal from DOM after it is hidden
-  $(modal).on("hidden.bs.modal", function () {
-    document.body.removeChild(modal);
-  });
+    // Append elements
+    modalFooter.appendChild(favButton);
+    modalFooter.appendChild(closeButton);
+    modalBody.appendChild(fullViewVideo);
+    modalContent.appendChild(modalBody);
+    modalContent.appendChild(modalFooter);
+    modalDialog.appendChild(modalContent);
+    modal.appendChild(modalDialog);
+    document.body.appendChild(modal);
+
+    // Show the modal
+    $(modal).modal("show");
+
+    // Remove modal from DOM after it is hidden
+    $(modal).on("hidden.bs.modal", function () {
+      document.body.removeChild(modal);
+    });
+  })();
 }
 
 // Function to show image in full view
@@ -154,25 +219,56 @@ async function showImageInFullView(imageSrc) {
   modalFooter.className = "modal-footer";
 
   const favorites = await window.electronAPI.getFavorites();
-  let isFavorite = favorites.includes(imageSrc);
+  // Compare base filename (without timestamp) for favorites check
+  const getBaseName = (filePath) => {
+    const fileName = filePath.split("/").pop();
+    // Remove timestamp if present (e.g., IMG_1234567890123.JPG -> IMG.JPG)
+    return fileName.replace(/_\d{13}(\.[^.]+)$/i, "$1");
+  };
+  const imageBase = getBaseName(imageSrc);
+  let isFavorite = favorites.some((fav) => getBaseName(fav) === imageBase);
 
   let favButton;
   if (isFavorite) {
-    favButton = document.createElement("button");
-    favButton.className = "btn btn-danger";
-    favButton.type = "button";
-    favButton.textContent = "Remove from Favorites";
-    favButton.onclick = async () => {
-      try {
-        const response = await window.electronAPI.removeFromFavorites(imageSrc);
-        console.log(`Removed from Favorites: ${imageSrc}`);
-        alert(response.message);
-        $(modal).modal("hide");
-      } catch (error) {
-        console.error("Error removing from favorites:", error);
-        alert("Failed to remove image from favorites.");
-      }
-    };
+    if (window.showingFavorites) {
+      favButton = document.createElement("button");
+      favButton.className = "btn btn-danger";
+      favButton.type = "button";
+      favButton.textContent = "Remove from Favorites";
+      favButton.onclick = async () => {
+        try {
+          const response = await window.electronAPI.removeFromFavorites(
+            imageSrc
+          );
+          console.log(`Removed from Favorites: ${imageSrc}`);
+          alert(response.message);
+          $(modal).modal("hide");
+          // Refresh favorites after modal is hidden
+          $(modal).on("hidden.bs.modal", function () {
+            loadFavorites();
+          });
+        } catch (error) {
+          console.error("Error removing from favorites:", error);
+          alert("Failed to remove image from favorites.");
+        }
+      };
+    } else {
+      favButton = document.createElement("span");
+      favButton.className = "text-success";
+      favButton.innerHTML =
+        'Added to Favorites. <a href="#" id="goto-favorites">Go to Favorites</a>';
+      setTimeout(() => {
+        const link = document.getElementById("goto-favorites");
+        if (link) {
+          link.onclick = (e) => {
+            e.preventDefault();
+            window.showingFavorites = true;
+            document.getElementById("favorites-button").click();
+            $(modal).modal("hide");
+          };
+        }
+      }, 0);
+    }
   } else {
     favButton = document.createElement("button");
     favButton.className = "btn btn-warning";
@@ -190,16 +286,16 @@ async function showImageInFullView(imageSrc) {
   closeButton.ariaLabel = "Close";
   closeButton.innerHTML = '<span aria-hidden="true">Close</span>';
 
-  // Email button
-  const emailButton = document.createElement("button");
-  emailButton.className = "btn btn-info";
-  emailButton.type = "button";
-  emailButton.textContent = "Email";
-  emailButton.display = "none";
-  emailButton.onclick = () => {
-    // Show email modal form
-    showEmailModal(imageSrc);
-  };
+  // Email button hidden for now
+  // const emailButton = document.createElement("button");
+  // emailButton.className = "btn btn-info";
+  // emailButton.type = "button";
+  // emailButton.textContent = "Email";
+  // emailButton.display = "none";
+  // emailButton.onclick = () => {
+  //   // Show email modal form
+  //   showEmailModal(imageSrc);
+  // };
 
   const modalBody = document.createElement("div");
   modalBody.className = "modal-body";
@@ -210,7 +306,7 @@ async function showImageInFullView(imageSrc) {
 
   // Append elements
   modalFooter.appendChild(favButton);
-  modalFooter.appendChild(emailButton);
+  // modalFooter.appendChild(emailButton); // Email button hidden for now
   modalFooter.appendChild(closeButton);
   modalBody.appendChild(fullViewImage);
   modalContent.appendChild(modalBody);
@@ -256,7 +352,8 @@ async function loadFavorites() {
       img.src = imageSrc;
       img.style.width = "200px"; // Set thumbnail width
       img.style.cursor = "pointer";
-      img.onclick = () => showImageInFullView(img.src);
+      // Pass the actual file path, not the URL, to the modal
+      img.onclick = () => showImageInFullView(imageSrc);
       imageContainer.appendChild(img);
     });
   } catch (error) {
@@ -302,7 +399,7 @@ function populateImagesOnPage(images) {
           img.style.width = "200px"; // Set thumbnail width
           img.style.cursor = "pointer";
           img.onclick = () => {
-            showImageInFullView(img.src);
+            showImageInFullView(image.imagePath);
           };
           imageContainer.appendChild(img);
         }

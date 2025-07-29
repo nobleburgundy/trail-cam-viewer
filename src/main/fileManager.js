@@ -11,7 +11,6 @@ const IMAGE_EXTENSIONS = [
   ".webp",
   ".mov",
 ];
-const sdCardBasePath = "/Volumes/Untitled/DCIM";
 const sdCardFolderName = "DCIM";
 
 /**

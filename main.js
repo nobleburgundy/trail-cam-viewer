@@ -154,16 +154,20 @@ ipcMain.handle("add-to-favorites", (event, imageSrc) => {
     // Copy image to favorites dir
     const ext = path.extname(srcPath);
     const baseName = path.basename(srcPath, ext);
-
-    // Add timestamp to avoid collisions
-    const timestamp = Date.now();
-    const destName = `${baseName}_${timestamp}${ext}`;
+    const destName = baseName + ext;
     const destPath = path.join(favoritesDir, destName);
     console.log("favpath", favoritesDir, "destPath", destPath);
 
     if (!fs.existsSync(favoritesDir)) {
       fs.mkdirSync(favoritesDir, { recursive: true });
       console.log("favdir created", favoritesDir);
+    }
+
+    if (fs.existsSync(destPath)) {
+      return {
+        success: false,
+        message: "A file with this name is already in favorites.",
+      };
     }
 
     fs.copyFileSync(srcPath, destPath);
@@ -187,10 +191,12 @@ ipcMain.handle("remove-from-favorites", (event, imageSrc) => {
     if (!fs.existsSync(favoritesDir)) {
       fs.mkdirSync(favoritesDir, { recursive: true });
     }
-    // Remove image file from disk
-    if (fs.existsSync(imageSrc)) {
+    // Only remove file from favorites directory
+    const fileName = path.basename(imageSrc);
+    const favPath = path.join(favoritesDir, fileName);
+    if (fs.existsSync(favPath)) {
       try {
-        fs.unlinkSync(imageSrc);
+        fs.unlinkSync(favPath);
       } catch (err) {
         console.error("Error deleting favorite image file:", err);
       }
