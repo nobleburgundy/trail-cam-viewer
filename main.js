@@ -12,6 +12,22 @@ ipcMain.handle("get-favorites-path", () => {
   return path.join(app.getPath("userData"), "favorites");
 });
 
+// IPC handler to get the SD card path (returns null if not mounted)
+ipcMain.handle("get-sdcard-path", () => {
+  // You may want to make sdCardPath dynamic in future
+  // For now, check if the path exists and is accessible
+  try {
+    const fs = require("fs");
+    if (fs.existsSync(sdCardPath)) {
+      return sdCardPath;
+    } else {
+      return null;
+    }
+  } catch (err) {
+    return null;
+  }
+});
+
 // IPC handler to get images from a specified folder (for testing)
 ipcMain.handle("get-images-from-folder", async (event, folderPath) => {
   try {
@@ -89,10 +105,16 @@ watcher
   });
 
 // IPC handler to get images from a folder
-ipcMain.handle("get-images", async (event) => {
+ipcMain.handle("get-images", async () => {
   try {
-    const imageFiles = await getImagesFromSDCard();
-    return imageFiles; // Return the full image file objects
+    // Only call getImagesFromSDCard if sdCardPath is valid and exists
+    const fs = require("fs");
+    if (!sdCardPath || !fs.existsSync(sdCardPath)) {
+      // No SD card mounted, return empty array
+      return [];
+    }
+    const imageFiles = await getImagesFromSDCard(sdCardPath);
+    return imageFiles;
   } catch (error) {
     console.error("Error reading images:", error);
     throw error;

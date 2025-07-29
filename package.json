@@ -1,6 +1,6 @@
 {
   "name": "trail-cam-viewer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An Electron based node app for viewing and categorizing photos.",
   "main": "main.js",
   "scripts": {

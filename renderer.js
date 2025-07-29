@@ -20,14 +20,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.warn("No test-config.json found or error reading config.");
   }
 
-  // Check if running in development mode
-  const isDevelopment = window.env.NODE_ENV === "development";
-  // loadImages(testFolderPath, loadImagesFromTestPath);
-
   // Listen for SD card status updates from `sdCardWatcher.js`
   window.electronAPI.onSDCardMounted((sdCardPath) => {
     console.log("SD Card Detected! Loading images", "sdCardPath", sdCardPath);
-    loadImages(testFolderPath, loadImagesFromTestPath);
+    loadImages(testFolderPath, false);
   });
 
   window.electronAPI.onSDCardRemoved(() => {
@@ -56,6 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       favoritesButton.textContent = "Favorites";
       if (window.showFavoritesHeader) window.showFavoritesHeader(false);
+
       loadImages(testFolderPath, loadImagesFromTestPath);
     }
   });
@@ -66,6 +63,8 @@ async function loadImages(
   testFolderPath = null,
   loadImagesFromTestPath = false
 ) {
+  console.log("load images");
+
   try {
     let imageFiles;
     if (loadImagesFromTestPath && testFolderPath) {
@@ -73,6 +72,16 @@ async function loadImages(
       imageFiles = await window.electronAPI.getImagesFromFolder(testFolderPath);
       console.log("imageFiles", imageFiles);
     } else {
+      // Check if SD card is mounted before loading images
+      if (window.electronAPI.getSDCardPath) {
+        const sdCardPath = await window.electronAPI.getSDCardPath();
+        if (!sdCardPath) {
+          const imageContainer = document.getElementById("image-container");
+          imageContainer.innerHTML =
+            "<p class='text-center'>No SD card found. Please connect the SD card reader to the computer.</p>";
+          return;
+        }
+      }
       imageFiles = await window.electronAPI.getImages();
     }
     populateImagesOnPage(imageFiles);
@@ -297,7 +306,6 @@ async function showImageInFullView(imageSrc) {
   // emailButton.className = "btn btn-info";
   // emailButton.type = "button";
   // emailButton.textContent = "Email";
-  // emailButton.display = "none";
   // emailButton.onclick = () => {
   //   // Show email modal form
   //   showEmailModal(imageSrc);
@@ -348,7 +356,7 @@ async function loadFavorites() {
 
     if (favorites.length === 0) {
       imageContainer.innerHTML =
-        "<p class='text-center'>No favorite images found.</p>";
+        "<p class='text-center'>No favorite images added yet.</p>";
       return;
     }
 
