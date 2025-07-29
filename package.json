@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "NODE_ENV=production electron .",
+    "start:dev": "NODE_ENV=development electron .",
     "build": "electron-builder",
     "prebuild": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
