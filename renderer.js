@@ -116,7 +116,7 @@ function showVideoInFullView(videoSrc) {
     if (isFavorite) {
       if (window.showingFavorites) {
         favButton = document.createElement("button");
-        favButton.className = "btn btn-danger";
+        favButton.className = "btn btn-danger me-auto";
         favButton.type = "button";
         favButton.textContent = "Remove from Favorites";
         favButton.onclick = async () => {
@@ -138,7 +138,7 @@ function showVideoInFullView(videoSrc) {
         };
       } else {
         favButton = document.createElement("span");
-        favButton.className = "text-success";
+        favButton.className = "text-success me-auto";
         favButton.innerHTML =
           'Added to Favorites. <a href="#" id="goto-favorites">Go to Favorites</a>';
         setTimeout(() => {
@@ -155,7 +155,7 @@ function showVideoInFullView(videoSrc) {
       }
     } else {
       favButton = document.createElement("button");
-      favButton.className = "btn btn-warning";
+      favButton.className = "btn btn-warning me-auto";
       favButton.type = "button";
       favButton.textContent = "Add to Favorites";
       favButton.onclick = () => {
@@ -232,7 +232,7 @@ async function showImageInFullView(imageSrc) {
   if (isFavorite) {
     if (window.showingFavorites) {
       favButton = document.createElement("button");
-      favButton.className = "btn btn-danger";
+      favButton.className = "btn btn-danger me-auto";
       favButton.type = "button";
       favButton.textContent = "Remove from Favorites";
       favButton.onclick = async () => {
@@ -254,7 +254,7 @@ async function showImageInFullView(imageSrc) {
       };
     } else {
       favButton = document.createElement("span");
-      favButton.className = "text-success";
+      favButton.className = "text-success me-auto";
       favButton.innerHTML =
         'Added to Favorites. <a href="#" id="goto-favorites">Go to Favorites</a>';
       setTimeout(() => {
@@ -271,7 +271,7 @@ async function showImageInFullView(imageSrc) {
     }
   } else {
     favButton = document.createElement("button");
-    favButton.className = "btn btn-warning";
+    favButton.className = "btn btn-warning me-auto";
     favButton.type = "button";
     favButton.textContent = "Add to Favorites";
     favButton.onclick = () => {
