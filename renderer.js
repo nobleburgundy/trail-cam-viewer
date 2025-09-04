@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Listen for SD card status updates from `sdCardWatcher.js`
   window.electronAPI.onSDCardMounted((sdCardPath) => {
-    console.log("SD Card Detected! Loading images", "sdCardPath", sdCardPath);
     loadImages(testFolderPath, false);
   });
 
@@ -380,9 +379,7 @@ function populateImagesOnPage(images) {
   const imageContainer = document.getElementById("image-container");
   imageContainer.innerHTML = ""; // Clear previous images
   groupImagesByDate(images).then((groupedImagesArray) => {
-    groupedImagesArray.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
-    console.log("gropuedImagesArray", groupedImagesArray);
-
+    groupedImagesArray.sort((a, b) => new Date(b.date) - new Date(a.date));
     groupedImagesArray.forEach((group) => {
       const dateHeading = document.createElement("h3");
       dateHeading.className = "text-center";

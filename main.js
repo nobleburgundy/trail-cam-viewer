@@ -140,7 +140,7 @@ ipcMain.on("unmount-and-quit", () => {
   exec(`diskutil info ${sdCardPath}`, (error, stdout, stderr) => {
     if (error) {
       if (isDevelopment) console.log(`SD card not mounted: ${error.message}`);
-      app.exit(0); // Suppress OS error dialogs
+      app.quit(); // Suppress OS error dialogs
       return;
     }
     // If the SD card is mounted, unmount it forcefully
@@ -150,11 +150,11 @@ ipcMain.on("unmount-and-quit", () => {
         if (unmountError) {
           if (isDevelopment)
             console.error(`Error unmounting SD card: ${unmountError.message}`);
-          app.exit(0); // Suppress OS error dialogs
+          app.quit(); // Suppress OS error dialogs
           return;
         }
         if (isDevelopment) console.log(`SD card unmounted: ${unmountStdout}`);
-        app.exit(0); // Suppress OS error dialogs
+        app.quit(); // Suppress OS error dialogs
       }
     );
   });
